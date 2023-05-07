@@ -1,0 +1,16 @@
+Package: scAssist
+Title: Single-cell Assistant
+Version: 0.0.0.9000
+Authors@R: 
+    person("Yulin", "Lyu", , "lvyulin@pku.edu.cn", role = c("aut", "cre"))
+Description: Assist in the analysis and visualization of single-cell data.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    data.table,
+    ggplot2,
+    ggrastr,
+    methods,
+    RColorBrewer

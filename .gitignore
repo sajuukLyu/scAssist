@@ -20,6 +20,8 @@
 
 # RStudio files
 .Rproj.user/
+rsconnect/
+*.Rproj
 
 # produced vignettes
 vignettes/*.html
@@ -44,6 +46,3 @@ docs/
 
 # translation temp files
 po/*~
-
-# RStudio Connect folder
-rsconnect/
