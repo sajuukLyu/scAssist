@@ -1,0 +1,149 @@
+#' Better visualize categorized metadata on 2D dimensional reduction plot
+#' 
+#' Place cells based on given 2D dimensional reduction coordinate in a specific order, and color
+#' them using the values of a given categorized metadata (i.e. sample, celltype, etc.)
+#'
+#' @param obj *object* containing data needed for visualization. (Seurat object, etc.)
+#' @param meta *string* describing the metadata to plot. Can be a categorized metadata.
+#' @param ... Other parameters
+#'
+#' @return *ggplot object* of the plot
+#' 
+#' @importFrom stats median
+#' @importFrom methods is
+#' @import ggplot2
+#' @import ggrastr
+#' @import ggsci
+#' @import data.table
+#' 
+#' @rdname plotMeta
+#' @export
+#'
+setGeneric(
+  "plotMeta",
+  function(obj, meta = "orig.ident", ...) standardGeneric("plotMeta"),
+  signature = "obj"
+)
+
+#'
+#' @param meta_max *integer* describing the maximum number of different categories.
+#' @param label *logical* describing whether to label cell clusters.
+#' @param label_meta *string* describing which metadata is used to label cell clusters.
+#' @param label_max *integer* describing the maximum number of different labels.
+#' @param reduc *string* describing which dimension reduction is used to plot cells.
+#' @param dims *integer vector* describing which 2 dimensions are used to plot cells.
+#' @param col *string vector* describing the colors used to distinguish categories.
+#' @param legend_ncol *integer* describing the column number of legends.
+#' @param order *string* describing the way to order cells. Can be one of:
+#'  * "random" : Cells will be ordered randomly.
+#'  * "given" : Cells will be ordered based on a given order.
+#' @param order_by *integer vector* describing the order of cells when the parameter
+#' 'order' is set to "given".
+#' @param size *numeric* describing the size of cell points.
+#' @param alpha *numeric* describing the transparency of cell points.
+#' @param do_raster *logical* describing whether to perform rasterization to plots.
+#' @param dpi *integer* describing the quality of rasterization (dots per inch) when
+#' the parameter 'do_raster' is set to TRUE.
+#' @param x_name *string* describing the name of x axis.
+#' @param y_name *string* describing the name of y axis.
+#' 
+#' @rdname plotMeta
+#' @export
+#'
+setMethod(
+  "plotMeta", "Seurat",
+  function(
+    obj,
+    meta = "orig.ident", meta_max = 100L,
+    label = T, label_meta = meta, label_max = 50L,
+    reduc = "umap", dims = c(1L, 2L),
+    col = pal_d3("category20")(20), legend_ncol = 1L,
+    order =  c("random", "given"), order_by = 1:ncol(obj),
+    size = 0.4, alpha = 1,
+    do_raster = F, dpi = 300L,
+    x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2])
+  ) {
+    
+    stopifnot("Parameter 'dims' must be 2 different whole numbers!" = length(dims) == 2 && dims[1] != dims[2] && all.equal(dims, as.integer(dims)))
+    plotData <- as.data.table(obj[[reduc]]@cell.embeddings[, dims])
+    colnames(plotData) <- c("dim1", "dim2")
+    
+    # get metadata
+    stopifnot("Parameter 'meta' must be 1 single string." = length(meta) == 1)
+    stopifnot("No such metadata in this object!" = meta %in% colnames(obj@meta.data))
+    plotData$meta <- obj@meta.data[, meta]
+    
+    # get enough colors
+    n <- length(unique(plotData$meta))
+    stopifnot("Too many categories, must find a simpler 'meta'." = n <= meta_max)
+    if(length(col) < n) {col <- colorRampPalette(col)(n)}
+    
+    # setup theme
+    plotTheme <- theme(
+      aspect.ratio = 1,
+      plot.background = element_blank(),
+      panel.background = element_blank(),
+      panel.border = element_rect(fill = NA, color = "black"),
+      panel.grid = element_blank(),
+      legend.key = element_blank(),
+      axis.line = element_blank(),
+      axis.ticks = element_blank(),
+      axis.text = element_blank(),
+      axis.title = element_text(hjust = 0.5),
+      plot.title = element_text(face = "bold", hjust = .5)
+    )
+    
+    # setup order
+    order <- match.arg(order)
+    if(order == "random") {
+      plotData <- plotData[sample(1:.N)]
+    } else if(order == "given") {
+      plotData <- plotData[order_by]
+    }
+    
+    # main plot
+    if(do_raster) {
+      p <- ggplot(plotData, aes(x = dim1, y = dim2, color = meta)) +
+        geom_point_rast(shape = 16, size = size, alpha = alpha, raster.dpi = dpi) +
+        scale_color_manual(values = col) +
+        guides(color = guide_legend(override.aes = list(size = 5, shape = 15, alpha = 1), ncol = legend_ncol)) +
+        labs(x = x_name, y = y_name, title = meta, color = "") +
+        plotTheme
+    } else {
+      p <- ggplot(plotData, aes(x = dim1, y = dim2, color = meta)) +
+        geom_point(shape = 16, size = size, alpha = alpha) +
+        scale_color_manual(values = col) +
+        guides(color = guide_legend(override.aes = list(size = 5, shape = 15, alpha = 1), ncol = legend_ncol)) +
+        labs(x = x_name, y = y_name, title = meta, color = "") +
+        plotTheme
+    }
+    
+    # add label
+    if(label) {
+      # check label
+      if(!label_meta %in% colnames(obj@meta.data)) {
+        warning("Parameter 'label_meta' should be one of metadata names.", call. = F)
+      } else if(length(unique(obj@meta.data[[label_meta]])) > label_max) {
+        warning("Too many labels, should find a simpler 'label_meta'.", call. = F)
+      } else {
+        label_x = tapply(obj[[reduc]]@cell.embeddings[, dims[1]], obj@meta.data[[label_meta]], median)
+        label_y = tapply(obj[[reduc]]@cell.embeddings[, dims[2]], obj@meta.data[[label_meta]], median)
+        
+        labelData <- data.table(
+          label = names(label_x),
+          x = label_x,
+          y = label_y
+        )
+        
+        p <- p +
+          geom_text(
+            data = labelData, aes(x = x, y = y, label = label),
+            size = 3, color = "black", fontface = "plain"
+          )
+      }
+    }
+    
+    p
+  }
+)
+

@@ -12,5 +12,6 @@ Imports:
     data.table,
     ggplot2,
     ggrastr,
+    ggsci,
     methods,
     RColorBrewer

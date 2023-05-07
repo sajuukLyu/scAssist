@@ -3,7 +3,7 @@
 \name{plotFeature}
 \alias{plotFeature}
 \alias{plotFeature,Seurat-method}
-\title{Better visualize features on 2D dimensional reduction plot}
+\title{Better visualize feature on 2D dimensional reduction plot}
 \usage{
 plotFeature(obj, feat = "TOP2A", ...)
 
@@ -99,7 +99,7 @@ the parameter 'do_raster' is set to TRUE.}
 
 \item{y_name}{\emph{string} describing the name of y axis.}
 
-\item{label}{\emph{logical} describing whether}
+\item{label}{\emph{logical} describing whether to label cell clusters.}
 
 \item{label_meta}{\emph{string} describing which metadata is used to label cell clusters.}
 

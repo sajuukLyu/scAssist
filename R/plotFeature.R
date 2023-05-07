@@ -1,5 +1,5 @@
 
-#' Better visualize features on 2D dimensional reduction plot
+#' Better visualize feature on 2D dimensional reduction plot
 #' 
 #' Place cells based on given 2D dimensional reduction coordinate in a specific order, and color
 #' them using the values of a given feature (i.e. gene expression, some scores, etc.)
@@ -60,7 +60,7 @@ setGeneric(
 #' the parameter 'do_raster' is set to TRUE.
 #' @param x_name *string* describing the name of x axis.
 #' @param y_name *string* describing the name of y axis.
-#' @param label *logical* describing whether
+#' @param label *logical* describing whether to label cell clusters.
 #' @param label_meta *string* describing which metadata is used to label cell clusters.
 #' @param label_max *integer* describing the maximum number of different labels.
 #' 
