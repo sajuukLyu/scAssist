@@ -25,7 +25,8 @@ plotMeta(obj, meta = "orig.ident", ...)
   do_raster = F,
   dpi = 300L,
   x_name = paste0(toupper(reduc), "_", dims[1]),
-  y_name = paste0(toupper(reduc), "_", dims[2])
+  y_name = paste0(toupper(reduc), "_", dims[2]),
+  axis_tick = F
 )
 }
 \arguments{
@@ -64,7 +65,7 @@ plotMeta(obj, meta = "orig.ident", ...)
 
 \item{alpha}{\emph{numeric} describing the transparency of cell points.}
 
-\item{do_raster}{\emph{logical} describing whether to perform rasterization to plots.}
+\item{do_raster}{\emph{logical} describing whether to perform rasterization to plot.}
 
 \item{dpi}{\emph{integer} describing the quality of rasterization (dots per inch) when
 the parameter 'do_raster' is set to TRUE.}
@@ -72,6 +73,8 @@ the parameter 'do_raster' is set to TRUE.}
 \item{x_name}{\emph{string} describing the name of x axis.}
 
 \item{y_name}{\emph{string} describing the name of y axis.}
+
+\item{axis_tick}{\emph{logical} describing whether to show axis ticks of plot.}
 }
 \value{
 \emph{ggplot object} of the plot

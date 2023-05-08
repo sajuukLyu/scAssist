@@ -29,7 +29,10 @@ plotFeature(obj, feat = "TOP2A", ...)
   y_name = paste0(toupper(reduc), "_", dims[2]),
   label = T,
   label_meta = "orig.ident",
-  label_max = 50L
+  label_max = 50L,
+  vln = T,
+  vln_meta = label_meta,
+  vln_max = 50L
 )
 }
 \arguments{
@@ -104,6 +107,12 @@ the parameter 'do_raster' is set to TRUE.}
 \item{label_meta}{\emph{string} describing which metadata is used to label cell clusters.}
 
 \item{label_max}{\emph{integer} describing the maximum number of different labels.}
+
+\item{vln}{\emph{logical} describing whether to add violin plot.}
+
+\item{vln_meta}{\emph{string} describing which metadata is used for violin plot.}
+
+\item{vln_max}{\emph{integer} describing the maximum number of categories of violin plot.}
 }
 \value{
 \emph{ggplot object} of the plot

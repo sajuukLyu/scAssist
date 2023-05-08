@@ -10,7 +10,7 @@
 #' @return *ggplot object* of the plot
 #' 
 #' @importFrom stats median
-#' @importFrom methods is
+#' @importFrom grDevices colorRampPalette
 #' @import ggplot2
 #' @import ggrastr
 #' @import ggsci
@@ -41,11 +41,12 @@ setGeneric(
 #' 'order' is set to "given".
 #' @param size *numeric* describing the size of cell points.
 #' @param alpha *numeric* describing the transparency of cell points.
-#' @param do_raster *logical* describing whether to perform rasterization to plots.
+#' @param do_raster *logical* describing whether to perform rasterization to plot.
 #' @param dpi *integer* describing the quality of rasterization (dots per inch) when
 #' the parameter 'do_raster' is set to TRUE.
 #' @param x_name *string* describing the name of x axis.
 #' @param y_name *string* describing the name of y axis.
+#' @param axis_tick *logical* describing whether to show axis ticks of plot.
 #' 
 #' @rdname plotMeta
 #' @export
@@ -61,7 +62,8 @@ setMethod(
     order =  c("random", "given"), order_by = 1:ncol(obj),
     size = 0.4, alpha = 1,
     do_raster = F, dpi = 300L,
-    x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2])
+    x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
+    axis_tick = F
   ) {
     
     stopifnot("Parameter 'dims' must be 2 different whole numbers!" = length(dims) == 2 && dims[1] != dims[2] && all.equal(dims, as.integer(dims)))
@@ -87,11 +89,15 @@ setMethod(
       panel.grid = element_blank(),
       legend.key = element_blank(),
       axis.line = element_blank(),
-      axis.ticks = element_blank(),
-      axis.text = element_blank(),
       axis.title = element_text(hjust = 0.5),
       plot.title = element_text(face = "bold", hjust = .5)
     )
+    if(!axis_tick) {
+      plotTheme <- plotTheme + theme(
+        axis.ticks = element_blank(),
+        axis.text = element_blank()
+      )
+    }
     
     # setup order
     order <- match.arg(order)

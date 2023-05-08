@@ -11,11 +11,14 @@
 #' @return *ggplot object* of the plot
 #' 
 #' @importFrom stats median
-#' @importFrom methods is
+#' @importFrom circlize colorRamp2
+#' @importFrom forcats fct_reorder
+#' @importFrom purrr set_names
 #' @import ggplot2
 #' @import ggrastr
 #' @import RColorBrewer
 #' @import data.table
+#' @import patchwork
 #' 
 #' @rdname plotFeature
 #' @export
@@ -63,6 +66,9 @@ setGeneric(
 #' @param label *logical* describing whether to label cell clusters.
 #' @param label_meta *string* describing which metadata is used to label cell clusters.
 #' @param label_max *integer* describing the maximum number of different labels.
+#' @param vln *logical* describing whether to add violin plot.
+#' @param vln_meta *string* describing which metadata is used for violin plot.
+#' @param vln_max *integer* describing the maximum number of categories of violin plot.
 #' 
 #' @rdname plotFeature
 #' @export
@@ -80,7 +86,8 @@ setMethod(
     size = 0.4, alpha = 1,
     do_raster = F, dpi = 300L,
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
-    label = T, label_meta = "orig.ident", label_max = 50L
+    label = T, label_meta = "orig.ident", label_max = 50L,
+    vln = T, vln_meta = label_meta, vln_max = 50L
   ) {
     
     stopifnot("Parameter 'dims' must be 2 different whole numbers!" = length(dims) == 2 && dims[1] != dims[2] && all.equal(dims, as.integer(dims)))
@@ -151,24 +158,24 @@ setMethod(
     # setup order
     order <- match.arg(order)
     if(order == "value") {
-      plotData <- plotData[order(feat)]
+      plotDataOrdered <- plotData[order(feat)]
     } else if(order == "abs") {
-      plotData <- plotData[order(abs(feat))]
+      plotDataOrdered <- plotData[order(abs(feat))]
     } else if(order == "given") {
-      plotData <- plotData[order_by]
+      plotDataOrdered <- plotData[order_by]
     } else if(order == "random") {
-      plotData <- plotData[sample(1:.N)]
+      plotDataOrdered <- plotData[sample(1:.N)]
     }
     
     # main plot
     if(do_raster) {
-      p <- ggplot(plotData, aes(x = dim1, y = dim2, color = feat)) +
+      p <- ggplot(plotDataOrdered, aes(x = dim1, y = dim2, color = feat)) +
         geom_point_rast(shape = 16, size = size, alpha = alpha, raster.dpi = dpi) +
         labs(x = x_name, y = y_name, title = feat, color = "") +
         plotColorBar +
         plotTheme
     } else {
-      p <- ggplot(plotData, aes(x = dim1, y = dim2, color = feat)) +
+      p <- ggplot(plotDataOrdered, aes(x = dim1, y = dim2, color = feat)) +
         geom_point(shape = 16, size = size, alpha = alpha) +
         labs(x = x_name, y = y_name, title = feat, color = "") +
         plotColorBar +
@@ -183,8 +190,8 @@ setMethod(
       } else if(length(unique(obj@meta.data[[label_meta]])) > label_max) {
         warning("Too many labels, should find a simpler 'label_meta'.", call. = F)
       } else {
-        label_x = tapply(obj[[reduc]]@cell.embeddings[, dims[1]], obj@meta.data[[label_meta]], median)
-        label_y = tapply(obj[[reduc]]@cell.embeddings[, dims[2]], obj@meta.data[[label_meta]], median)
+        label_x = tapply(plotData$dim1, obj@meta.data[[label_meta]], median)
+        label_y = tapply(plotData$dim2, obj@meta.data[[label_meta]], median)
         
         labelData <- data.table(
           label = names(label_x),
@@ -205,7 +212,47 @@ setMethod(
       }
     }
     
-    p
+    # add violin plot
+    if(vln) {
+      # check violin metadata
+      if(!vln_meta %in% colnames(obj@meta.data)) {
+        warning("Parameter 'vln_meta' should be one of metadata names.", call. = F)
+      } else if(length(unique(obj@meta.data[[vln_meta]])) > vln_max) {
+        warning("Too many categories, should find a simpler 'vln_meta'.", call. = F)
+      } else {
+        plotData$meta <- obj@meta.data[, vln_meta]
+        vlnData <- plotData[, .(.N, avg = mean(feat)), by = meta]
+        vlnData <- vlnData[N >= 5]
+        
+        x <- range(plotData$feat)
+        colFun <- colorRamp2(x[1] + diff(x)*disp, col)
+        vlnCol <- set_names(colFun(vlnData$avg), vlnData$meta)
+        
+        v <- ggplot(plotData[meta %in% vlnData$meta], aes(x = fct_reorder(meta, feat, .desc = T), y = feat)) +
+          geom_violin(aes(fill = meta), scale = "width", adjust = 1.5, show.legend = F) +
+          scale_fill_manual(values = vlnCol) +
+          scale_y_continuous(expand = expansion(c(0, 0.02))) +
+          scale_x_discrete(position = "top") +
+          theme(
+            aspect.ratio = 1/3,
+            panel.background = element_blank(),
+            panel.border = element_rect(fill = NA, color = "black"),
+            plot.background = element_blank(),
+            panel.grid = element_blank(),
+            panel.grid.major.x = element_line(color = "gray80"),
+            axis.text.x = element_text(angle = 45, hjust = 0),
+            axis.title = element_blank()
+          )
+        
+        v + p + theme(plot.title = element_blank()) +
+          plot_layout(ncol = 1) +
+          plot_annotation(
+            title = feat,
+            theme = theme(plot.title = element_text(face = "bold.italic", hjust = .5))
+          )
+      }
+    } else {
+      p
+    }
   }
 )
-
