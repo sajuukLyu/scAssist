@@ -30,6 +30,9 @@ setGeneric(
 #' @param label *logical* describing whether to label cell clusters.
 #' @param label_meta *string* describing which metadata is used to label cell clusters.
 #' @param label_max *integer* describing the maximum number of different labels.
+#' @param split *logical* describing whether to split subplots.
+#' @param split_meta *string* describing which metadata is used for split subplots.
+#' @param split_max *integer* describing the maximum number of categories of split subplots.
 #' @param reduc *string* describing which dimension reduction is used to plot cells.
 #' @param dims *integer vector* describing which 2 dimensions are used to plot cells.
 #' @param col *string vector* describing the colors used to distinguish categories.
@@ -57,6 +60,7 @@ setMethod(
     obj,
     meta = "orig.ident", meta_max = 100L,
     label = T, label_meta = meta, label_max = 50L,
+    split = F, split_meta = meta, split_max = 10L,
     reduc = "umap", dims = c(1L, 2L),
     col = pal_d3("category20")(20), legend_ncol = 1L,
     order =  c("random", "given"), order_by = 1:ncol(obj),
@@ -90,7 +94,8 @@ setMethod(
       legend.key = element_blank(),
       axis.line = element_blank(),
       axis.title = element_text(hjust = 0.5),
-      plot.title = element_text(face = "bold", hjust = .5)
+      plot.title = element_text(face = "bold", hjust = .5),
+      strip.background = element_blank()
     )
     if(!axis_tick) {
       plotTheme <- plotTheme + theme(
@@ -99,29 +104,50 @@ setMethod(
       )
     }
     
+    # split
+    if(split) {
+      if(!split_meta %in% colnames(obj@meta.data)) {
+        warning("Parameter 'split_meta' should be one of metadata names.", call. = F)
+      } else if(length(unique(obj@meta.data[[split_meta]])) == 1) {
+        warning("Only 1 categories to split, should find a better 'split_meta'.", call. = F)
+      } else if(length(unique(obj@meta.data[[split_meta]])) > split_max) {
+        warning("Too many categories to split, should find a simpler 'split_meta'.", call. = F)
+      } else {
+        plotData$split <- obj@meta.data[, split_meta]
+      }
+    }
+    
     # setup order
     order <- match.arg(order)
     if(order == "random") {
-      plotData <- plotData[sample(1:.N)]
+      plotDataOrdered <- plotData[sample(1:.N)]
     } else if(order == "given") {
-      plotData <- plotData[order_by]
+      plotDataOrdered <- plotData[order_by]
     }
     
     # main plot
     if(do_raster) {
-      p <- ggplot(plotData, aes(x = dim1, y = dim2, color = meta)) +
+      p <- ggplot(plotDataOrdered, aes(x = dim1, y = dim2, color = meta)) +
         geom_point_rast(shape = 16, size = size, alpha = alpha, raster.dpi = dpi) +
         scale_color_manual(values = col) +
         guides(color = guide_legend(override.aes = list(size = 5, shape = 15, alpha = 1), ncol = legend_ncol)) +
         labs(x = x_name, y = y_name, title = meta, color = "") +
         plotTheme
+      
+      if("split" %in% colnames(plotData)) {
+        p <- p + facet_wrap(~ split, nrow = 1)
+      }
     } else {
-      p <- ggplot(plotData, aes(x = dim1, y = dim2, color = meta)) +
+      p <- ggplot(plotDataOrdered, aes(x = dim1, y = dim2, color = meta)) +
         geom_point(shape = 16, size = size, alpha = alpha) +
         scale_color_manual(values = col) +
         guides(color = guide_legend(override.aes = list(size = 5, shape = 15, alpha = 1), ncol = legend_ncol)) +
         labs(x = x_name, y = y_name, title = meta, color = "") +
         plotTheme
+      
+      if("split" %in% colnames(plotData)) {
+        p <- p + facet_wrap(~ split, nrow = 1)
+      }
     }
     
     # add label
@@ -132,14 +158,13 @@ setMethod(
       } else if(length(unique(obj@meta.data[[label_meta]])) > label_max) {
         warning("Too many labels, should find a simpler 'label_meta'.", call. = F)
       } else {
-        label_x = tapply(obj[[reduc]]@cell.embeddings[, dims[1]], obj@meta.data[[label_meta]], median)
-        label_y = tapply(obj[[reduc]]@cell.embeddings[, dims[2]], obj@meta.data[[label_meta]], median)
+        plotData$label <- obj@meta.data[[label_meta]]
         
-        labelData <- data.table(
-          label = names(label_x),
-          x = label_x,
-          y = label_y
-        )
+        if(!"split" %in% colnames(plotData)) {
+          labelData <- plotData[, .(x = median(dim1), y = median(dim2)), by = label]
+        } else {
+          labelData <- plotData[, .(x = median(dim1), y = median(dim2)), by = .(label, split)]
+        }
         
         p <- p +
           geom_text(

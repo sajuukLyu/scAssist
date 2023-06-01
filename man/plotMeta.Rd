@@ -14,6 +14,9 @@ plotMeta(obj, meta = "orig.ident", ...)
   label = T,
   label_meta = meta,
   label_max = 50L,
+  split = F,
+  split_meta = meta,
+  split_max = 10L,
   reduc = "umap",
   dims = c(1L, 2L),
   col = pal_d3("category20")(20),
@@ -43,6 +46,12 @@ plotMeta(obj, meta = "orig.ident", ...)
 \item{label_meta}{\emph{string} describing which metadata is used to label cell clusters.}
 
 \item{label_max}{\emph{integer} describing the maximum number of different labels.}
+
+\item{split}{\emph{logical} describing whether to split subplots.}
+
+\item{split_meta}{\emph{string} describing which metadata is used for split subplots.}
+
+\item{split_max}{\emph{integer} describing the maximum number of categories of split subplots.}
 
 \item{reduc}{\emph{string} describing which dimension reduction is used to plot cells.}
 

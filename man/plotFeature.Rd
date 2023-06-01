@@ -32,7 +32,10 @@ plotFeature(obj, feat = "TOP2A", ...)
   label_max = 50L,
   vln = T,
   vln_meta = label_meta,
-  vln_max = 50L
+  vln_max = 50L,
+  split = F,
+  split_meta = "orig.ident",
+  split_max = 10L
 )
 }
 \arguments{
@@ -113,6 +116,12 @@ the parameter 'do_raster' is set to TRUE.}
 \item{vln_meta}{\emph{string} describing which metadata is used for violin plot.}
 
 \item{vln_max}{\emph{integer} describing the maximum number of categories of violin plot.}
+
+\item{split}{\emph{logical} describing whether to split subplots.}
+
+\item{split_meta}{\emph{string} describing which metadata is used for split subplots.}
+
+\item{split_max}{\emph{integer} describing the maximum number of categories of split subplots.}
 }
 \value{
 \emph{ggplot object} of the plot

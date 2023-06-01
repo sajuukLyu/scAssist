@@ -69,6 +69,9 @@ setGeneric(
 #' @param vln *logical* describing whether to add violin plot.
 #' @param vln_meta *string* describing which metadata is used for violin plot.
 #' @param vln_max *integer* describing the maximum number of categories of violin plot.
+#' @param split *logical* describing whether to split subplots.
+#' @param split_meta *string* describing which metadata is used for split subplots.
+#' @param split_max *integer* describing the maximum number of categories of split subplots.
 #' 
 #' @rdname plotFeature
 #' @export
@@ -87,7 +90,8 @@ setMethod(
     do_raster = F, dpi = 300L,
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
     label = T, label_meta = "orig.ident", label_max = 50L,
-    vln = T, vln_meta = label_meta, vln_max = 50L
+    vln = T, vln_meta = label_meta, vln_max = 50L,
+    split = F, split_meta = "orig.ident", split_max = 10L
   ) {
     
     stopifnot("Parameter 'dims' must be 2 different whole numbers!" = length(dims) == 2 && dims[1] != dims[2] && all.equal(dims, as.integer(dims)))
@@ -114,6 +118,7 @@ setMethod(
       plotColorBar <- scale_color_gradientn(
         colors = col, values = disp,
         na.value = col_na,
+        limits = range(x),
         breaks = b,
         label = round(b, 1)
       )
@@ -137,6 +142,7 @@ setMethod(
       disp <- c(seq(0, zpos, len = 5)[1:4], seq(zpos, 1, len = 5))
       plotColorBar <- scale_color_gradientn(
         colors = col, values = disp,
+        limits = pn,
         na.value = col_na
       )
     }
@@ -152,8 +158,22 @@ setMethod(
       axis.ticks = element_blank(),
       axis.text = element_blank(),
       axis.title = element_text(hjust = 0.5),
-      plot.title = element_text(face = "bold.italic", hjust = .5)
+      plot.title = element_text(face = "bold.italic", hjust = .5),
+      strip.background = element_blank()
     )
+    
+    # split
+    if(split) {
+      if(!split_meta %in% colnames(obj@meta.data)) {
+        warning("Parameter 'split_meta' should be one of metadata names.", call. = F)
+      } else if(length(unique(obj@meta.data[[split_meta]])) == 1) {
+        warning("Only 1 categories to split, should find a better 'split_meta'.", call. = F)
+      } else if(length(unique(obj@meta.data[[split_meta]])) > split_max) {
+        warning("Too many categories to split, should find a simpler 'split_meta'.", call. = F)
+      } else {
+        plotData$split <- obj@meta.data[, split_meta]
+      }
+    }
     
     # setup order
     order <- match.arg(order)
@@ -169,17 +189,43 @@ setMethod(
     
     # main plot
     if(do_raster) {
-      p <- ggplot(plotDataOrdered, aes(x = dim1, y = dim2, color = feat)) +
-        geom_point_rast(shape = 16, size = size, alpha = alpha, raster.dpi = dpi) +
-        labs(x = x_name, y = y_name, title = feat, color = "") +
-        plotColorBar +
-        plotTheme
+      if(!"split" %in% colnames(plotData)) {
+        p <- ggplot(plotDataOrdered, aes(x = dim1, y = dim2, color = feat)) +
+          geom_point_rast(shape = 16, size = size, alpha = alpha, raster.dpi = dpi) +
+          labs(x = x_name, y = y_name, title = feat, color = "") +
+          plotColorBar +
+          plotTheme
+      } else {
+        pList <- list()
+        for(i in unique(plotDataOrdered$split)) {
+          pList[[i]] <- ggplot(plotDataOrdered[split == i], aes(x = dim1, y = dim2, color = feat)) +
+            geom_point_rast(shape = 16, size = size, alpha = alpha, raster.dpi = dpi) +
+            labs(x = x_name, y = y_name, title = feat, color = "") +
+            scale_x_continuous(limits = range(plotDataOrdered$dim1)) +
+            scale_y_continuous(limits = range(plotDataOrdered$dim2)) +
+            plotColorBar +
+            plotTheme
+        }
+      }
     } else {
-      p <- ggplot(plotDataOrdered, aes(x = dim1, y = dim2, color = feat)) +
-        geom_point(shape = 16, size = size, alpha = alpha) +
-        labs(x = x_name, y = y_name, title = feat, color = "") +
-        plotColorBar +
-        plotTheme
+      if(!"split" %in% colnames(plotData)) {
+        p <- ggplot(plotDataOrdered, aes(x = dim1, y = dim2, color = feat)) +
+          geom_point(shape = 16, size = size, alpha = alpha) +
+          labs(x = x_name, y = y_name, title = feat, color = "") +
+          plotColorBar +
+          plotTheme
+      } else {
+        pList <- list()
+        for(i in unique(plotDataOrdered$split)) {
+          pList[[i]] <- ggplot(plotDataOrdered[split == i], aes(x = dim1, y = dim2, color = feat)) +
+            geom_point(shape = 16, size = size, alpha = alpha) +
+            labs(x = x_name, y = y_name, title = feat, color = "") +
+            scale_x_continuous(limits = range(plotDataOrdered$dim1)) +
+            scale_y_continuous(limits = range(plotDataOrdered$dim2)) +
+            plotColorBar +
+            plotTheme
+        }
+      }
     }
     
     # add label
@@ -190,25 +236,37 @@ setMethod(
       } else if(length(unique(obj@meta.data[[label_meta]])) > label_max) {
         warning("Too many labels, should find a simpler 'label_meta'.", call. = F)
       } else {
-        label_x = tapply(plotData$dim1, obj@meta.data[[label_meta]], median)
-        label_y = tapply(plotData$dim2, obj@meta.data[[label_meta]], median)
+        plotData$label <- obj@meta.data[[label_meta]]
         
-        labelData <- data.table(
-          label = names(label_x),
-          x = label_x,
-          y = label_y
-        )
-        
-        p <- p +
-          geom_label(
-            data = labelData, aes(x = x, y = y, label = label),
-            fill = "#FFFFFF", size = 3, color = NA, alpha = .6, fontface = "bold",
-            label.size = 0.5, label.r = unit(0.25, "lines"), label.padding = unit(0.15, "lines")
-          ) +
-          geom_text(
-            data = labelData, aes(x = x, y = y, label = label),
-            size = 3, color = "black", fontface = "bold"
-          )
+        if(!"split" %in% colnames(plotData)) {
+          labelData <- plotData[, .(x = median(dim1), y = median(dim2)), by = label]
+          
+          p <- p +
+            geom_label(
+              data = labelData, aes(x = x, y = y, label = label),
+              fill = "#FFFFFF", size = 3, color = NA, alpha = .6, fontface = "bold",
+              label.size = 0.5, label.r = unit(0.25, "lines"), label.padding = unit(0.15, "lines")
+            ) +
+            geom_text(
+              data = labelData, aes(x = x, y = y, label = label),
+              size = 3, color = "black", fontface = "bold"
+            )
+        } else {
+          labelData <- plotData[, .(x = median(dim1), y = median(dim2)), by = .(label, split)]
+          
+          for(i in names(pList)) {
+            pList[[i]] <- pList[[i]] +
+              geom_label(
+                data = labelData[split == i], aes(x = x, y = y, label = label),
+                fill = "#FFFFFF", size = 3, color = NA, alpha = .6, fontface = "bold",
+                label.size = 0.5, label.r = unit(0.25, "lines"), label.padding = unit(0.15, "lines")
+              ) +
+              geom_text(
+                data = labelData[split == i], aes(x = x, y = y, label = label),
+                size = 3, color = "black", fontface = "bold"
+              )
+          }
+        }
       }
     }
     
@@ -221,38 +279,98 @@ setMethod(
         warning("Too many categories, should find a simpler 'vln_meta'.", call. = F)
       } else {
         plotData$meta <- obj@meta.data[, vln_meta]
-        vlnData <- plotData[, .(.N, avg = mean(feat)), by = meta]
-        vlnData <- vlnData[N >= 5]
         
-        x <- range(plotData$feat)
-        colFun <- colorRamp2(x[1] + diff(x)*disp, col)
-        vlnCol <- set_names(colFun(vlnData$avg), vlnData$meta)
-        
-        v <- ggplot(plotData[meta %in% vlnData$meta], aes(x = fct_reorder(meta, feat, .desc = T), y = feat)) +
-          geom_violin(aes(fill = meta), scale = "width", adjust = 1.5, show.legend = F) +
-          scale_fill_manual(values = vlnCol) +
-          scale_y_continuous(expand = expansion(c(0, 0.02))) +
-          scale_x_discrete(position = "top") +
-          theme(
-            aspect.ratio = 1/3,
-            panel.background = element_blank(),
-            panel.border = element_rect(fill = NA, color = "black"),
-            plot.background = element_blank(),
-            panel.grid = element_blank(),
-            panel.grid.major.x = element_line(color = "gray80"),
-            axis.text.x = element_text(angle = 45, hjust = 0),
-            axis.title = element_blank()
-          )
-        
-        v + p + theme(plot.title = element_blank()) +
-          plot_layout(ncol = 1) +
+        if(!"split" %in% colnames(plotData)) {
+          vlnData <- plotData[, .(.N, avg = mean(feat)), by = meta]
+          vlnData <- vlnData[N >= 5]
+          
+          x <- range(plotData$feat)
+          colFun <- colorRamp2(x[1] + diff(x)*disp, col)
+          vlnCol <- set_names(colFun(vlnData$avg), vlnData$meta)
+          
+          v <- ggplot(plotData[meta %in% vlnData$meta], aes(x = fct_reorder(meta, feat, .desc = T), y = feat)) +
+            geom_violin(aes(fill = meta), scale = "width", adjust = 1.5, show.legend = F) +
+            scale_fill_manual(values = vlnCol) +
+            scale_y_continuous(expand = expansion(c(0, 0.02))) +
+            scale_x_discrete(position = "top") +
+            theme(
+              aspect.ratio = 1/3,
+              panel.background = element_blank(),
+              panel.border = element_rect(fill = NA, color = "black"),
+              plot.background = element_blank(),
+              panel.grid = element_blank(),
+              panel.grid.major.x = element_line(color = "gray80"),
+              axis.text.x = element_text(angle = 45, hjust = 0),
+              axis.title = element_blank(),
+              strip.background = element_blank(),
+              strip.text = element_blank()
+            )
+          
+          v + p + theme(plot.title = element_blank()) +
+            plot_layout(ncol = 1, guides = "collect") +
+            plot_annotation(
+              title = feat,
+              theme = theme(plot.title = element_text(face = "bold.italic", hjust = .5))
+            )
+        } else {
+          vlnData <- plotData[, .(.N, avg = mean(feat)), by = .(meta, split)]
+          vlnData <- vlnData[N >= 5]
+          
+          x <- range(plotData$feat)
+          colFun <- colorRamp2(x[1] + diff(x)*disp, col)
+          
+          vList <- list()
+          for(i in names(pList)) {
+            vlnData_i <- vlnData[split == i]
+            vlnCol_i <- set_names(colFun(vlnData_i$avg), vlnData_i$meta)
+            
+            vList[[i]] <- ggplot(plotData[meta %in% vlnData_i$meta], aes(x = fct_reorder(meta, feat, .desc = T), y = feat)) +
+              geom_violin(aes(fill = meta), scale = "width", adjust = 1.5, show.legend = F) +
+              scale_fill_manual(values = vlnCol_i) +
+              scale_y_continuous(expand = expansion(c(0, 0.02))) +
+              scale_x_discrete(position = "top") +
+              theme(
+                aspect.ratio = 1/3,
+                panel.background = element_blank(),
+                panel.border = element_rect(fill = NA, color = "black"),
+                plot.background = element_blank(),
+                panel.grid = element_blank(),
+                panel.grid.major.x = element_line(color = "gray80"),
+                axis.text.x = element_text(angle = 45, hjust = 0),
+                axis.title = element_blank(),
+                strip.background = element_blank(),
+                strip.text = element_blank()
+              )
+          }
+          
+          z <- vList[[1]]
+          for(i in 2:length(vList)) {
+            z <- z + vList[[i]]
+          }
+          for(i in 1:length(pList)) {
+            z <- z + pList[[i]] + theme(plot.title = element_blank())
+          }
+          z + plot_layout(nrow = 2, guides = "collect") +
+            plot_annotation(
+              title = feat,
+              theme = theme(plot.title = element_text(face = "bold.italic", hjust = .5))
+            )
+        }
+      }
+    } else {
+      if(!"split" %in% colnames(plotData)) {
+        p
+      } else {
+        z <- pList[[1]] + theme(plot.title = element_blank())
+        for(i in 2:length(pList)) {
+          z <- z + pList[[i]] + theme(plot.title = element_blank())
+        }
+        z + plot_layout(nrow = 1, guides = "collect") +
           plot_annotation(
             title = feat,
             theme = theme(plot.title = element_text(face = "bold.italic", hjust = .5))
           )
       }
-    } else {
-      p
     }
   }
 )
