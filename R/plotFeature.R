@@ -219,7 +219,7 @@ setMethod(
         for(i in unique(plotDataOrdered$split)) {
           pList[[i]] <- ggplot(plotDataOrdered[split == i], aes(x = dim1, y = dim2, color = feat)) +
             geom_point(shape = 16, size = size, alpha = alpha) +
-            labs(x = x_name, y = y_name, title = feat, color = "") +
+            labs(x = x_name, y = y_name, title = i, color = "") +
             scale_x_continuous(limits = range(plotDataOrdered$dim1)) +
             scale_y_continuous(limits = range(plotDataOrdered$dim2)) +
             plotColorBar +
@@ -348,7 +348,7 @@ setMethod(
             z <- z + vList[[i]]
           }
           for(i in 1:length(pList)) {
-            z <- z + pList[[i]] + theme(plot.title = element_blank())
+            z <- z + pList[[i]]
           }
           z + plot_layout(nrow = 2, guides = "collect") +
             plot_annotation(
@@ -361,9 +361,9 @@ setMethod(
       if(!"split" %in% colnames(plotData)) {
         p
       } else {
-        z <- pList[[1]] + theme(plot.title = element_blank())
+        z <- pList[[1]]
         for(i in 2:length(pList)) {
-          z <- z + pList[[i]] + theme(plot.title = element_blank())
+          z <- z + pList[[i]]
         }
         z + plot_layout(nrow = 1, guides = "collect") +
           plot_annotation(
