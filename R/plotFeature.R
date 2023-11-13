@@ -99,11 +99,17 @@ setMethod(
     colnames(plotData) <- c("dim1", "dim2")
     
     # get feature
+    obj_version <- Version(obj)$major
     feat_type <- match.arg(feat_type)
     stopifnot("Parameter 'feat' must be 1 single string." = length(feat) == 1)
     if(feat_type == "gene") {
-      stopifnot("No such gene in this assay!" = feat %in% rownames(obj[[assay]][[slot]]))
-      plotData$feat <- obj[[assay]][[slot]][feat, ]
+      if(obj_version >= 5) {
+        mat <- obj[[assay]][slot]
+      } else {
+        mat <- obj[[assay]][[slot]]
+      }
+      stopifnot("No such gene in this assay!" = feat %in% rownames(mat))
+      plotData$feat <- mat[feat, ]
     } else if(feat_type == "meta") {
       stopifnot("No such metadata in this object!" = feat %in% colnames(obj@meta.data))
       plotData$feat <- obj@meta.data[, feat]
