@@ -23,7 +23,11 @@ plotMeta(obj, meta = "orig.ident", ...)
   legend_ncol = 1L,
   order = c("random", "given"),
   order_by = 1:ncol(obj),
-  size = 0.4,
+  size = if (ncol(obj) < 5000) {
+     1
+ } else {
+     0.4
+ },
   alpha = 1,
   do_raster = F,
   dpi = 300L,

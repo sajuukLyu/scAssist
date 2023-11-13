@@ -86,7 +86,7 @@ setMethod(
     col = c("gray90", brewer.pal(9, "YlOrRd")), disp = seq(0, 1, len = length(col)), col_na = "gray90",
     cbar = c("normal", "min-max", "0-1", "pn"),
     order =  c("value", "abs", "given", "random"), order_by = 1:ncol(obj),
-    size = 0.4, alpha = 1,
+    size = if(ncol(obj) < 5000) {1} else {0.4}, alpha = 1,
     do_raster = F, dpi = 300L,
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
     label = T, label_meta = "orig.ident", label_max = 50L,

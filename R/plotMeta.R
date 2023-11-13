@@ -64,7 +64,7 @@ setMethod(
     reduc = "umap", dims = c(1L, 2L),
     col = pal_d3("category20")(20), legend_ncol = 1L,
     order =  c("random", "given"), order_by = 1:ncol(obj),
-    size = 0.4, alpha = 1,
+    size = if(ncol(obj) < 5000) {1} else {0.4}, alpha = 1,
     do_raster = F, dpi = 300L,
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
     axis_tick = F
