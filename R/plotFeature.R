@@ -91,6 +91,7 @@ setGeneric(
 #' @param split_meta *string* describing which metadata is used for split subplots.
 #' @param split_max *integer* describing the maximum number of categories of split subplots.
 #' @param split_level *string* describing the order of categories of split subplots.
+#' @param split_nrow *integer* describing the number of rows of split subplots if vln = F.
 #' 
 #' @rdname plotFeature
 #' @export
@@ -110,7 +111,8 @@ setMethod(
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
     label = T, label_meta = "orig.ident", label_max = 50L,
     vln = T, vln_meta = label_meta, vln_max = 50L,
-    split = F, split_meta = "orig.ident", split_max = 10L, split_level = NULL
+    split = F, split_meta = "orig.ident", split_max = 10L,
+    split_level = NULL, split_nrow = 1L
   ) {
     
     stopifnot("Parameter 'dims' must be 2 different whole numbers!" = length(dims) == 2 && dims[1] != dims[2] && all.equal(dims, as.integer(dims)))
@@ -393,7 +395,7 @@ setMethod(
         for(i in 2:length(pList)) {
           z <- z + pList[[i]]
         }
-        z + plot_layout(nrow = 1, guides = "collect") +
+        z + plot_layout(nrow = split_nrow, guides = "collect") +
           plot_annotation(
             title = feat,
             theme = theme(plot.title = element_text(face = "bold.italic", hjust = .5))

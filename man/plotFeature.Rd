@@ -75,7 +75,8 @@ plotFeature(
   split = F,
   split_meta = "orig.ident",
   split_max = 10L,
-  split_level = NULL
+  split_level = NULL,
+  split_nrow = 1L
 )
 }
 \arguments{
@@ -164,6 +165,8 @@ the parameter 'do_raster' is set to TRUE.}
 \item{split_level}{\emph{string} describing the order of categories of split subplots.}
 
 \item{...}{Other parameters}
+
+\item{split_nrow}{\emph{integer} describing the number of rows of split subplots if vln = F.}
 }
 \value{
 \emph{ggplot object} of the plot
