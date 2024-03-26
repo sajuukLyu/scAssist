@@ -5,7 +5,35 @@
 \alias{plotMeta,Seurat-method}
 \title{Better visualize categorized metadata on 2D dimensional reduction plot}
 \usage{
-plotMeta(obj, meta = "orig.ident", ...)
+plotMeta(
+  obj,
+  meta = "orig.ident",
+  meta_max = 100L,
+  label = T,
+  label_meta = meta,
+  label_max = 50L,
+  split = F,
+  split_meta = meta,
+  split_max = 10L,
+  reduc = "umap",
+  dims = c(1L, 2L),
+  col = (ggsci::pal_d3("category20"))(20),
+  legend_ncol = 1L,
+  order = c("random", "given"),
+  order_by = 1:ncol(obj),
+  size = if (ncol(obj) < 5000) {
+     1
+ } else {
+     0.4
+ },
+  alpha = 1,
+  do_raster = F,
+  dpi = 300L,
+  x_name = paste0(toupper(reduc), "_", dims[1]),
+  y_name = paste0(toupper(reduc), "_", dims[2]),
+  axis_tick = F,
+  ...
+)
 
 \S4method{plotMeta}{Seurat}(
   obj,
@@ -40,8 +68,6 @@ plotMeta(obj, meta = "orig.ident", ...)
 \item{obj}{\emph{object} containing data needed for visualization. (Seurat object, etc.)}
 
 \item{meta}{\emph{string} describing the metadata to plot. Can be a categorized metadata.}
-
-\item{...}{Other parameters}
 
 \item{meta_max}{\emph{integer} describing the maximum number of different categories.}
 
@@ -88,6 +114,8 @@ the parameter 'do_raster' is set to TRUE.}
 \item{y_name}{\emph{string} describing the name of y axis.}
 
 \item{axis_tick}{\emph{logical} describing whether to show axis ticks of plot.}
+
+\item{...}{Other parameters}
 }
 \value{
 \emph{ggplot object} of the plot

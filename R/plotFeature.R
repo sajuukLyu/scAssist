@@ -25,7 +25,25 @@
 #'
 setGeneric(
   "plotFeature",
-  function(obj, feat = "TOP2A", ...) standardGeneric("plotFeature"),
+  function(
+    obj,
+    feat = "TOP2A",
+    feat_type = c("gene", "meta"),
+    assay = "RNA",
+    slot = "data",
+    reduc = "umap", dims = c(1L, 2L),
+    col = c("gray90", brewer.pal(9, "YlOrRd")), disp = seq(0, 1, len = length(col)), col_na = "gray90",
+    cbar = c("normal", "min-max", "0-1", "pn"),
+    order =  c("value", "abs", "given", "random"), order_by = 1:ncol(obj),
+    size = if(ncol(obj) < 5000) {1} else {0.4},
+    alpha = 1,
+    do_raster = F, dpi = 300L,
+    x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
+    label = T, label_meta = "orig.ident", label_max = 50L,
+    vln = T, vln_meta = label_meta, vln_max = 50L,
+    split = F, split_meta = "orig.ident", split_max = 10L, split_level = NULL,
+    ...
+  ) standardGeneric("plotFeature"),
   signature = "obj"
 )
 
@@ -72,6 +90,7 @@ setGeneric(
 #' @param split *logical* describing whether to split subplots.
 #' @param split_meta *string* describing which metadata is used for split subplots.
 #' @param split_max *integer* describing the maximum number of categories of split subplots.
+#' @param split_level *string* describing the order of categories of split subplots.
 #' 
 #' @rdname plotFeature
 #' @export
@@ -91,7 +110,7 @@ setMethod(
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
     label = T, label_meta = "orig.ident", label_max = 50L,
     vln = T, vln_meta = label_meta, vln_max = 50L,
-    split = F, split_meta = "orig.ident", split_max = 10L
+    split = F, split_meta = "orig.ident", split_max = 10L, split_level = NULL
   ) {
     
     stopifnot("Parameter 'dims' must be 2 different whole numbers!" = length(dims) == 2 && dims[1] != dims[2] && all.equal(dims, as.integer(dims)))
@@ -178,6 +197,9 @@ setMethod(
         warning("Too many categories to split, should find a simpler 'split_meta'.", call. = F)
       } else {
         plotData$split <- obj@meta.data[, split_meta]
+        if(!is.null(split_level)) {
+          plotData$split <- factor(plotData$split, levels = split_level)
+        }
       }
     }
     
@@ -330,7 +352,7 @@ setMethod(
             vlnData_i <- vlnData[split == i]
             vlnCol_i <- set_names(colFun(vlnData_i$avg), vlnData_i$meta)
             
-            vList[[i]] <- ggplot(plotData[meta %in% vlnData_i$meta], aes(x = fct_reorder(meta, feat, .desc = T), y = feat)) +
+            vList[[i]] <- ggplot(plotData[split == i], aes(x = fct_reorder(meta, feat, .desc = T), y = feat)) +
               geom_violin(aes(fill = meta), scale = "width", adjust = 1.5, show.legend = F) +
               scale_fill_manual(values = vlnCol_i) +
               scale_y_continuous(expand = expansion(c(0, 0.02))) +
