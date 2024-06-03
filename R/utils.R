@@ -25,3 +25,19 @@ uniqueID <- function(name, ID) {
   name
 }
 
+#' Calculate the percentage of all counts that belong to given sets of genes
+#'
+#' @importFrom Seurat PercentageFeatureSet
+#' 
+#' @export
+#'
+calcPercentageGeneSets <- function(obj, geneSets, assay = "RNA") {
+  
+  allGene <- rownames(obj[[assay]]$counts)
+  for(i in names(geneSets)) {
+    shareGene <- intersect(allGene, geneSets[[i]])
+    obj[[i]] <- Seurat::PercentageFeatureSet(obj, features = shareGene, assay = assay)
+  }
+  
+  obj
+}
