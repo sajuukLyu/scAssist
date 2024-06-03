@@ -25,7 +25,7 @@ uniqueID <- function(name, ID) {
   name
 }
 
-#' Calculate the percentage of all counts that belong to given sets of genes
+#' Calculate the percentage of all counts that belong to given sets of genes using Seurat function
 #'
 #' @importFrom Seurat PercentageFeatureSet
 #' 
@@ -38,6 +38,24 @@ calcPercentageGeneSets <- function(obj, geneSets, assay = "RNA") {
     shareGene <- intersect(allGene, geneSets[[i]])
     obj[[i]] <- Seurat::PercentageFeatureSet(obj, features = shareGene, assay = assay)
   }
+  
+  obj
+}
+
+#' Find variable features while excluding given set of features using Seurat function
+#'
+#' @importFrom Seurat FindVariableFeatures
+#' 
+#' @export
+#'
+excluFindVariableFeatures <- function(obj, exFeat, assay = "RNA", ...) {
+  
+  rawCountMtx <- obj[[assay]]$counts
+  clearCountMtx <- rawCountMtx[setdiff(rownames(rawCountMtx), exFeat), ]
+  
+  obj[[assay]]$counts <- clearCountMtx
+  obj <- Seurat::FindVariableFeatures(obj, assay = assay, ...)
+  obj[[assay]]$counts <- rawCountMtx
   
   obj
 }

@@ -2,10 +2,10 @@
 % Please edit documentation in R/utils.R
 \name{calcPercentageGeneSets}
 \alias{calcPercentageGeneSets}
-\title{Calculate the percentage of all counts that belong to given sets of genes}
+\title{Calculate the percentage of all counts that belong to given sets of genes using Seurat function}
 \usage{
 calcPercentageGeneSets(obj, geneSets, assay = "RNA")
 }
 \description{
-Calculate the percentage of all counts that belong to given sets of genes
+Calculate the percentage of all counts that belong to given sets of genes using Seurat function
 }
