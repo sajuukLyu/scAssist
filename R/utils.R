@@ -1,4 +1,7 @@
 
+#' 
+#' @export
+#'
 `%ni%` <- function(a, b) return(! a %in% b)
 
 #' Get mild material color
@@ -16,6 +19,10 @@ getMatColor <- function(pal = "blue", num = 3L) {
   pal_material(palette = pal, n = 2 * num + 1)(2 * num + 1)[2 * 1:num]
 }
 
+#' Replace duplicated gene name with ID
+#' 
+#' @export
+#'
 uniqueID <- function(name, ID) {
   stopifnot("ID must be unique!" = all(!duplicated(ID)))
   stopifnot("ID and name must have the same length!" = length(name) == length(ID))
@@ -56,6 +63,23 @@ excluFindVariableFeatures <- function(obj, exFeat, assay = "RNA", ...) {
   obj[[assay]]$counts <- clearCountMtx
   obj <- Seurat::FindVariableFeatures(obj, assay = assay, ...)
   obj[[assay]]$counts <- rawCountMtx
+  
+  obj
+}
+
+#' Calculate module scores for feature expression programs in single cells using Seurat function
+#'
+#' @importFrom Seurat AddModuleScore
+#' 
+#' @export
+#'
+renameAddModuleScore <- function(obj, geneList, ...) {
+  
+  obj <- Seurat::AddModuleScore(obj, features = geneList, ...)
+  scoreMat <- obj@meta.data[, tail(1:ncol(obj@meta.data), length(geneList)), drop = F]
+  
+  colnames(scoreMat) <- names(geneList)
+  obj@meta.data <- obj@meta.data[, 1:(ncol(obj@meta.data) - length(geneList))] %>% cbind(scoreMat)
   
   obj
 }
