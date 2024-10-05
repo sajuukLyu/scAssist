@@ -230,7 +230,7 @@ setMethod(
         for(i in unique(plotDataOrdered$split)) {
           pList[[i]] <- ggplot(plotDataOrdered[split == i], aes(x = dim1, y = dim2, color = feat)) +
             geom_point_rast(shape = 16, size = size, alpha = alpha, raster.dpi = dpi) +
-            labs(x = x_name, y = y_name, title = feat, color = "") +
+            labs(x = x_name, y = y_name, title = i, color = "") +
             scale_x_continuous(limits = range(plotDataOrdered$dim1)) +
             scale_y_continuous(limits = range(plotDataOrdered$dim2)) +
             plotColorBar +
@@ -318,7 +318,7 @@ setMethod(
           colFun <- colorRamp2(x[1] + diff(x)*disp, col)
           vlnCol <- set_names(colFun(vlnData$avg), vlnData$meta)
           
-          v <- ggplot(plotData[meta %in% vlnData$meta], aes(x = fct_reorder(meta, feat, .desc = T), y = feat)) +
+          v <- ggplot(plotData[meta %in% vlnData$meta], aes(x = fct_reorder(meta, feat, .fun = mean, .desc = T), y = feat)) +
             geom_violin(aes(fill = meta), scale = "width", adjust = 1.5, show.legend = F) +
             scale_fill_manual(values = vlnCol) +
             scale_y_continuous(expand = expansion(c(0, 0.02))) +
@@ -354,10 +354,10 @@ setMethod(
             vlnData_i <- vlnData[split == i]
             vlnCol_i <- set_names(colFun(vlnData_i$avg), vlnData_i$meta)
             
-            vList[[i]] <- ggplot(plotData[split == i], aes(x = fct_reorder(meta, feat, .desc = T), y = feat)) +
+            vList[[i]] <- ggplot(plotData[split == i], aes(x = fct_reorder(meta, feat, .fun = mean, .desc = T), y = feat)) +
               geom_violin(aes(fill = meta), scale = "width", adjust = 1.5, show.legend = F) +
               scale_fill_manual(values = vlnCol_i) +
-              scale_y_continuous(expand = expansion(c(0, 0.02))) +
+              scale_y_continuous(expand = expansion(c(0, 0.02)), limits = x) +
               scale_x_discrete(position = "top") +
               theme(
                 aspect.ratio = 1/3,
