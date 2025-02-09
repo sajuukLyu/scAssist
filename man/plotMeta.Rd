@@ -3,6 +3,7 @@
 \name{plotMeta}
 \alias{plotMeta}
 \alias{plotMeta,Seurat-method}
+\alias{plotMeta,ArchRProject-method}
 \title{Better visualize categorized metadata on 2D dimensional reduction plot}
 \usage{
 plotMeta(
@@ -52,6 +53,35 @@ plotMeta(
   order = c("random", "given"),
   order_by = 1:ncol(obj),
   size = if (ncol(obj) < 5000) {
+     1
+ } else {
+     0.4
+ },
+  alpha = 1,
+  do_raster = F,
+  dpi = 300L,
+  x_name = paste0(toupper(reduc), "_", dims[1]),
+  y_name = paste0(toupper(reduc), "_", dims[2]),
+  axis_tick = F
+)
+
+\S4method{plotMeta}{ArchRProject}(
+  obj,
+  meta = "Sample",
+  meta_max = 100L,
+  label = T,
+  label_meta = meta,
+  label_max = 50L,
+  split = F,
+  split_meta = meta,
+  split_max = 10L,
+  reduc = "UMAP",
+  dims = c(1L, 2L),
+  col = pal_d3("category20")(20),
+  legend_ncol = 1L,
+  order = c("random", "given"),
+  order_by = 1:ncol(obj),
+  size = if (length(obj$cellNames) < 5000) {
      1
  } else {
      0.4
