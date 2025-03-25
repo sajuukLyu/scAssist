@@ -39,6 +39,7 @@ setGeneric(
     alpha = 1,
     do_raster = F, dpi = 300L,
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
+    ratio = 1,
     label = T, label_meta = "orig.ident", label_max = 50L,
     vln = T, vln_meta = label_meta, vln_max = 50L,
     split = F, split_meta = "orig.ident", split_max = 10L, split_level = NULL,
@@ -81,6 +82,7 @@ setGeneric(
 #' the parameter 'do_raster' is set to TRUE.
 #' @param x_name *string* describing the name of x axis.
 #' @param y_name *string* describing the name of y axis.
+#' @param ratio *numeric* describing the axis ratio of plot.
 #' @param label *logical* describing whether to label cell clusters.
 #' @param label_meta *string* describing which metadata is used to label cell clusters.
 #' @param label_max *integer* describing the maximum number of different labels.
@@ -109,6 +111,7 @@ setMethod(
     size = if(ncol(obj) < 5000) {1} else {0.4}, alpha = 1,
     do_raster = F, dpi = 300L,
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
+    ratio = 1,
     label = T, label_meta = "orig.ident", label_max = 50L,
     vln = T, vln_meta = label_meta, vln_max = 50L,
     split = F, split_meta = "orig.ident", split_max = 10L,
@@ -176,7 +179,7 @@ setMethod(
     
     # setup theme
     plotTheme <- theme(
-      aspect.ratio = 1,
+      aspect.ratio = ratio,
       plot.background = element_blank(),
       panel.background = element_blank(),
       panel.border = element_rect(fill = NA, color = "black"),

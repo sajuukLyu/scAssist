@@ -33,7 +33,7 @@ setGeneric(
     alpha = 1,
     do_raster = F, dpi = 300L,
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
-    axis_tick = F,
+    ratio = 1, axis_tick = F,
     ...
   ) standardGeneric("plotMeta"),
   signature = "obj"
@@ -63,6 +63,7 @@ setGeneric(
 #' the parameter 'do_raster' is set to TRUE.
 #' @param x_name *string* describing the name of x axis.
 #' @param y_name *string* describing the name of y axis.
+#' @param ratio *numeric* describing the axis ratio of plot.
 #' @param axis_tick *logical* describing whether to show axis ticks of plot.
 #' 
 #' @rdname plotMeta
@@ -81,7 +82,7 @@ setMethod(
     size = if(ncol(obj) < 5000) {1} else {0.4}, alpha = 1,
     do_raster = F, dpi = 300L,
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
-    axis_tick = F
+    ratio = 1, axis_tick = F
   ) {
     
     stopifnot("Parameter 'dims' must be 2 different whole numbers!" = length(dims) == 2 && dims[1] != dims[2] && all.equal(dims, as.integer(dims)))
@@ -100,7 +101,7 @@ setMethod(
     
     # setup theme
     plotTheme <- theme(
-      aspect.ratio = 1,
+      aspect.ratio = ratio,
       plot.background = element_blank(),
       panel.background = element_blank(),
       panel.border = element_rect(fill = NA, color = "black"),
@@ -216,6 +217,7 @@ setMethod(
 #' the parameter 'do_raster' is set to TRUE.
 #' @param x_name *string* describing the name of x axis.
 #' @param y_name *string* describing the name of y axis.
+#' @param ratio *numeric* describing the axis ratio of plot.
 #' @param axis_tick *logical* describing whether to show axis ticks of plot.
 #' 
 #' @rdname plotMeta
@@ -234,7 +236,7 @@ setMethod(
     size = if(length(obj$cellNames) < 5000) {1} else {0.4}, alpha = 1,
     do_raster = F, dpi = 300L,
     x_name = paste0(toupper(reduc), "_", dims[1]), y_name = paste0(toupper(reduc), "_", dims[2]),
-    axis_tick = F
+    ratio = 1, axis_tick = F
   ) {
     
     stopifnot("Parameter 'dims' must be 2 different whole numbers!" = length(dims) == 2 && dims[1] != dims[2] && all.equal(dims, as.integer(dims)))
@@ -253,7 +255,7 @@ setMethod(
     
     # setup theme
     plotTheme <- theme(
-      aspect.ratio = 1,
+      aspect.ratio = ratio,
       plot.background = element_blank(),
       panel.background = element_blank(),
       panel.border = element_rect(fill = NA, color = "black"),

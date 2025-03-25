@@ -32,6 +32,7 @@ plotMeta(
   dpi = 300L,
   x_name = paste0(toupper(reduc), "_", dims[1]),
   y_name = paste0(toupper(reduc), "_", dims[2]),
+  ratio = 1,
   axis_tick = F,
   ...
 )
@@ -62,6 +63,7 @@ plotMeta(
   dpi = 300L,
   x_name = paste0(toupper(reduc), "_", dims[1]),
   y_name = paste0(toupper(reduc), "_", dims[2]),
+  ratio = 1,
   axis_tick = F
 )
 
@@ -91,6 +93,7 @@ plotMeta(
   dpi = 300L,
   x_name = paste0(toupper(reduc), "_", dims[1]),
   y_name = paste0(toupper(reduc), "_", dims[2]),
+  ratio = 1,
   axis_tick = F
 )
 }
@@ -142,6 +145,8 @@ the parameter 'do_raster' is set to TRUE.}
 \item{x_name}{\emph{string} describing the name of x axis.}
 
 \item{y_name}{\emph{string} describing the name of y axis.}
+
+\item{ratio}{\emph{numeric} describing the axis ratio of plot.}
 
 \item{axis_tick}{\emph{logical} describing whether to show axis ticks of plot.}
 
