@@ -98,6 +98,7 @@ setMethod(
     n <- length(unique(plotData$meta))
     stopifnot("Too many categories, must find a simpler 'meta'." = n <= meta_max)
     if(length(col) < n) {col <- colorRampPalette(col)(n)}
+    if(!is.null(names(col)) && all(unique(plotData$meta) %in% names(col))) {plotData$meta <- factor(plotData$meta, levels = names(col))}
     
     # setup theme
     plotTheme <- theme(
@@ -252,6 +253,7 @@ setMethod(
     n <- length(unique(plotData$meta))
     stopifnot("Too many categories, must find a simpler 'meta'." = n <= meta_max)
     if(length(col) < n) {col <- colorRampPalette(col)(n)}
+    if(!is.null(names(col)) && all(unique(plotData$meta) %in% names(col))) {plotData$meta <- factor(plotData$meta, levels = names(col))}
     
     # setup theme
     plotTheme <- theme(

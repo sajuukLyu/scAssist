@@ -202,8 +202,11 @@ setMethod(
         warning("Too many categories to split, should find a simpler 'split_meta'.", call. = F)
       } else {
         plotData$split <- obj@meta.data[, split_meta]
+        
         if(!is.null(split_level)) {
-          plotData$split <- factor(plotData$split, levels = split_level)
+          splitOrder <- split_level
+        } else {
+          splitOrder <- unique(plotData$split)
         }
       }
     }
@@ -230,7 +233,7 @@ setMethod(
           plotTheme
       } else {
         pList <- list()
-        for(i in unique(plotDataOrdered$split)) {
+        for(i in splitOrder) {
           pList[[i]] <- ggplot(plotDataOrdered[split == i], aes(x = dim1, y = dim2, color = feat)) +
             geom_point_rast(shape = 16, size = size, alpha = alpha, raster.dpi = dpi) +
             labs(x = x_name, y = y_name, title = i, color = "") +
@@ -249,7 +252,7 @@ setMethod(
           plotTheme
       } else {
         pList <- list()
-        for(i in unique(plotDataOrdered$split)) {
+        for(i in splitOrder) {
           pList[[i]] <- ggplot(plotDataOrdered[split == i], aes(x = dim1, y = dim2, color = feat)) +
             geom_point(shape = 16, size = size, alpha = alpha) +
             labs(x = x_name, y = y_name, title = i, color = "") +
