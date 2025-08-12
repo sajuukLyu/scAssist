@@ -15,6 +15,7 @@ Imports:
     ggplot2,
     ggrastr,
     ggsci,
+    homologene,
     patchwork,
     purrr,
     RColorBrewer
