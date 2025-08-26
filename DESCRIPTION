@@ -1,6 +1,6 @@
 Package: scAssist
 Title: Single-cell Assistant
-Version: 0.0.1
+Version: 0.1.0
 Authors@R: 
     person("Yulin", "Lyu", , "lvyulin@pku.edu.cn", role = c("aut", "cre"))
 Description: Assist in the analysis and visualization of single-cell data.

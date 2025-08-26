@@ -2,12 +2,12 @@
 % Please edit documentation in R/plotFeature.R
 \name{plotFeature}
 \alias{plotFeature}
-\alias{plotFeature,Seurat-method}
 \title{Better visualize feature on 2D dimensional reduction plot}
 \usage{
 plotFeature(
   obj,
   feat = "TOP2A",
+  assayMtx = NULL,
   feat_type = c("gene", "meta"),
   assay = "RNA",
   slot = "data",
@@ -19,11 +19,7 @@ plotFeature(
   cbar = c("normal", "min-max", "0-1", "pn"),
   order = c("value", "abs", "given", "random"),
   order_by = 1:ncol(obj),
-  size = if (ncol(obj) < 5000) {
-     1
- } else {
-     0.4
- },
+  size = 1,
   alpha = 1,
   do_raster = F,
   dpi = 300L,
@@ -40,51 +36,16 @@ plotFeature(
   split_meta = "orig.ident",
   split_max = 10L,
   split_level = NULL,
+  split_nrow = 1L,
   ...
-)
-
-\S4method{plotFeature}{Seurat}(
-  obj,
-  feat = "TOP2A",
-  feat_type = c("gene", "meta"),
-  assay = "RNA",
-  slot = "data",
-  reduc = "umap",
-  dims = c(1L, 2L),
-  col = c("gray90", brewer.pal(9, "YlOrRd")),
-  disp = seq(0, 1, len = length(col)),
-  col_na = "gray90",
-  cbar = c("normal", "min-max", "0-1", "pn"),
-  order = c("value", "abs", "given", "random"),
-  order_by = 1:ncol(obj),
-  size = if (ncol(obj) < 5000) {
-     1
- } else {
-     0.4
- },
-  alpha = 1,
-  do_raster = F,
-  dpi = 300L,
-  x_name = paste0(toupper(reduc), "_", dims[1]),
-  y_name = paste0(toupper(reduc), "_", dims[2]),
-  ratio = 1,
-  label = T,
-  label_meta = "orig.ident",
-  label_max = 50L,
-  vln = T,
-  vln_meta = label_meta,
-  vln_max = 50L,
-  split = F,
-  split_meta = "orig.ident",
-  split_max = 10L,
-  split_level = NULL,
-  split_nrow = 1L
 )
 }
 \arguments{
 \item{obj}{\emph{object} containing data needed for visualization. (Seurat object, etc.)}
 
 \item{feat}{\emph{string} describing the feature to plot. Can be a gene or a numeric metadata.}
+
+\item{assayMtx}{\emph{matrix} of imputed expression value or other assay.}
 
 \item{feat_type}{\emph{string} describing the type of feature. Can be one of:
 \itemize{
@@ -168,9 +129,9 @@ the parameter 'do_raster' is set to TRUE.}
 
 \item{split_level}{\emph{string} describing the order of categories of split subplots.}
 
-\item{...}{Other parameters}
-
 \item{split_nrow}{\emph{integer} describing the number of rows of split subplots if vln = F.}
+
+\item{...}{Other parameters}
 }
 \value{
 \emph{ggplot object} of the plot
