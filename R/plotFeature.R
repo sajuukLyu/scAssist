@@ -97,7 +97,7 @@ plotFeature <- function(
     assay = assay,
     slot = slot,
     reduc = reduc, dims = dims,
-    label = label, label_meta = label_meta, label_max = labal_max,
+    label = label, label_meta = label_meta, label_max = label_max,
     vln = vln, vln_meta = vln_meta, vln_max = vln_max,
     split = split, split_meta = split_meta, split_max = split_max, split_level = split_level,
     ...
