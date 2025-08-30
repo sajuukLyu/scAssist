@@ -48,7 +48,7 @@ plotMeta <- function(
     obj,
     meta = "orig.ident", meta_max = 100L,
     label = T, label_meta = meta, label_max = 50L,
-    split = F, split_meta = meta, split_max = 10L,
+    split = F, split_meta = meta, split_max = 10L, split_level = NULL, split_nrow = 1L,
     reduc = "umap", dims = c(1L, 2L),
     col = pal_d3("category20")(20), legend_ncol = 1L,
     order =  c("random", "given"), order_by = 1:ncol(obj),
@@ -115,7 +115,7 @@ plotMeta <- function(
       plotTheme
     
     if(split) {
-      p <- p + facet_wrap(~ split, nrow = 1)
+      p <- p + facet_wrap(~ split, nrow = split_nrow)
     }
   } else {
     p <- ggplot(plotDataOrdered, aes(x = dim1, y = dim2, color = feat)) +
@@ -126,7 +126,7 @@ plotMeta <- function(
       plotTheme
     
     if(split) {
-      p <- p + facet_wrap(~ split, nrow = 1)
+      p <- p + facet_wrap(~ split, nrow = split_nrow)
     }
   }
   
