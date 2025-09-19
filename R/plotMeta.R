@@ -11,6 +11,7 @@
 #' @param label_max *integer* describing the maximum number of different labels.
 #' @param split *logical* describing whether to split subplots.
 #' @param split_meta *string* describing which metadata is used for split subplots.
+#' @param split_level *string* describing the order of categories of split subplots.
 #' @param split_max *integer* describing the maximum number of categories of split subplots.
 #' @param reduc *string* describing which dimension reduction is used to plot cells.
 #' @param dims *integer vector* describing which 2 dimensions are used to plot cells.
